@@ -1,0 +1,314 @@
+[
+    {
+        "id": "97e59ea65549c8e2",
+        "type": "udp in",
+        "z": "55d3fd83d354d72d",
+        "name": "udp in 1700 ipv4 Texto",
+        "iface": "",
+        "port": "1700",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 200,
+        "y": 240,
+        "wires": [
+            [
+                "318064591ffe8d50",
+                "470ec31b3188d022"
+            ]
+        ]
+    },
+    {
+        "id": "318064591ffe8d50",
+        "type": "switch",
+        "z": "55d3fd83d354d72d",
+        "name": "Identify Arduino Sensor",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "KY-002",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "WaterLevel",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "WiFi UDP Sim",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 470,
+        "y": 260,
+        "wires": [
+            [
+                "b39b330c86157256",
+                "c9d7210d924635a2"
+            ],
+            [
+                "b39b330c86157256"
+            ],
+            [
+                "b39b330c86157256"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "b39b330c86157256",
+        "type": "json",
+        "z": "55d3fd83d354d72d",
+        "name": "payload to JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": true,
+        "x": 710,
+        "y": 260,
+        "wires": [
+            [
+                "bdd9957c751da7be"
+            ]
+        ]
+    },
+    {
+        "id": "b651acca39537ea7",
+        "type": "function",
+        "z": "55d3fd83d354d72d",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi UDP Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 240,
+        "wires": [
+            [
+                "2cca10635d4e9728",
+                "b3a3ccb38d690134"
+            ]
+        ]
+    },
+    {
+        "id": "2cca10635d4e9728",
+        "type": "debug",
+        "z": "55d3fd83d354d72d",
+        "name": "KY-002 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1380,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "bdd9957c751da7be",
+        "type": "switch",
+        "z": "55d3fd83d354d72d",
+        "name": "Identify Sensor",
+        "property": "payload.sensor_id",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "KY-002",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "WaterLevel",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 900,
+        "y": 260,
+        "wires": [
+            [
+                "b651acca39537ea7",
+                "41f93879315043a3",
+                "6d4bbb0877aab0c3"
+            ],
+            [
+                "513cd49320f684d3",
+                "104d8d9121606538",
+                "a97388ff8487fa26"
+            ],
+            [
+                "6da3f5f8b6469ce4"
+            ]
+        ]
+    },
+    {
+        "id": "41f93879315043a3",
+        "type": "influxdb out",
+        "z": "55d3fd83d354d72d",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB KY-002",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "KY-002",
+        "x": 1140,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "b3a3ccb38d690134",
+        "type": "mongodb4",
+        "z": "55d3fd83d354d72d",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "KY-002",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray KY-002",
+        "x": 1410,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "513cd49320f684d3",
+        "type": "function",
+        "z": "55d3fd83d354d72d",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi UDP Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 340,
+        "wires": [
+            [
+                "5f65a64e0862950b",
+                "2202e3bba1ea8ab9"
+            ]
+        ]
+    },
+    {
+        "id": "5f65a64e0862950b",
+        "type": "debug",
+        "z": "55d3fd83d354d72d",
+        "name": "WaterLevel full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1390,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "104d8d9121606538",
+        "type": "influxdb out",
+        "z": "55d3fd83d354d72d",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB WaterLevel",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "WaterLevel",
+        "x": 1160,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "2202e3bba1ea8ab9",
+        "type": "mongodb4",
+        "z": "55d3fd83d354d72d",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "WaterLevel",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray WaterLevel",
+        "x": 1420,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    }
+]

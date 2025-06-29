@@ -1,0 +1,235 @@
+[
+    {
+        "id": "30a8336aaf9fb74f",
+        "type": "function",
+        "z": "5f28e098f7af57ec",
+        "name": "Decode Payload Dragino LDS02",
+        "func": "function decodePayload(bytes, port) {\n    // Decode an uplink message from a buffer\n    // (array) of bytes to an object of fields.\n    var value = (bytes[0] << 8 | bytes[1]) & 0x3FFF;\n    var bat = value / 1000; // Battery, units: V\n\n    var door_open_status = bytes[0] & 0x80 ? 1 : 0; // 1: open, 0: close\n    var water_leak_status = bytes[0] & 0x40 ? 1 : 0;\n\n    var mod = bytes[2];\n    var alarm = bytes[9] & 0x01;\n\n    if (mod == 1) {\n        var open_times = bytes[3] << 16 | bytes[4] << 8 | bytes[5];\n        var open_duration = bytes[6] << 16 | bytes[7] << 8 | bytes[8]; // units: min\n        return {\n            BAT_V: bat,\n            MOD: mod,\n            DOOR_OPEN_STATUS: door_open_status,\n            DOOR_OPEN_TIMES: open_times,\n            LAST_DOOR_OPEN_DURATION: open_duration,\n            ALARM: alarm\n        };\n    } else if (mod == 2) {\n        var leak_times = bytes[3] << 16 | bytes[4] << 8 | bytes[5];\n        var leak_duration = bytes[6] << 16 | bytes[7] << 8 | bytes[8]; // units: min\n        return {\n            BAT_V: bat,\n            MOD: mod,\n            WATER_LEAK_STATUS: water_leak_status,\n            WATER_LEAK_TIMES: leak_times,\n            LAST_WATER_LEAK_DURATION: leak_duration\n        };\n    } else if (mod == 3) {\n        return {\n            BAT_V: bat,\n            MOD: mod,\n            DOOR_OPEN_STATUS: door_open_status,\n            WATER_LEAK_STATUS: water_leak_status,\n            ALARM: alarm\n        };\n    } else {\n        return {\n            BAT_V: bat,\n            MOD: mod,\n        };\n    }\n}\n\n\nmsg.fullPayLoad = String(msg.payload);\n//msg.fullPayLoad_Hex = Buffer.from(msg.payload, 'hex');\n\nlet payl_tmp = String(msg.payload);\nmsg.payloadData = payl_tmp.substring(16, payl_tmp.length);\n\n// Payload to decode\nlet bytes = [];\nfor (let i = 0; i < msg.payloadData.length; i += 2) {\n    bytes.push(parseInt(msg.payloadData.substring(i, i + 2), 16));\n}\n\nmsg.payload = decodePayload(bytes);\n\n// Añadimos al payload los datos en bruto\nmsg.payload.fullPayLoad = msg.fullPayLoad;\nmsg.payload.payloadData = msg.payloadData;\nmsg.payload.topic = msg.topic;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 40,
+        "wires": [
+            [
+                "c097571cb1cbfc63",
+                "ce1e6e2b5bd83e89"
+            ]
+        ]
+    },
+    {
+        "id": "ce1e6e2b5bd83e89",
+        "type": "influxdb out",
+        "z": "5f28e098f7af57ec",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB LDS02",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "Dragino LDS02",
+        "x": 840,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "c097571cb1cbfc63",
+        "type": "function",
+        "z": "5f28e098f7af57ec",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\nmsg.payload.Id = 'LDS02';\nmsg.payload.sensor_id = 'LDS02';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 80,
+        "wires": [
+            [
+                "81bcecf7fa906b6e",
+                "b6b466d05df2e5a6"
+            ]
+        ]
+    },
+    {
+        "id": "81bcecf7fa906b6e",
+        "type": "mongodb4",
+        "z": "5f28e098f7af57ec",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "LDS02",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray LDS02",
+        "x": 1090,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b6b466d05df2e5a6",
+        "type": "debug",
+        "z": "5f28e098f7af57ec",
+        "name": "LDS02 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "1089f427736a0a90",
+        "type": "switch",
+        "z": "5f28e098f7af57ec",
+        "name": "Identify Topic",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "01830CFE",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "/arduino/pir",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "dragino-2a7596",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 350,
+        "y": 200,
+        "wires": [
+            [
+                "30a8336aaf9fb74f"
+            ],
+            [
+                "a6f252d8361e3022"
+            ],
+            [
+                "cf0ec380ad26cbf2"
+            ],
+            [
+                "bac93ca0e8245763"
+            ]
+        ]
+    },
+    {
+        "id": "eafed4a94b63a3bf",
+        "type": "mqtt in",
+        "z": "5f28e098f7af57ec",
+        "name": "Mosquitto Docker (Buffer)",
+        "topic": "#",
+        "qos": "0",
+        "datatype": "buffer",
+        "broker": "5e8c3773417c5e96",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "1089f427736a0a90"
+            ]
+        ]
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    },
+    {
+        "id": "5e8c3773417c5e96",
+        "type": "mqtt-broker",
+        "name": "Mosquitto Docker",
+        "broker": "cisriseMosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

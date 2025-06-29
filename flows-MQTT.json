@@ -1,0 +1,299 @@
+[
+    {
+        "id": "1089f427736a0a90",
+        "type": "switch",
+        "z": "5f28e098f7af57ec",
+        "name": "Identify Topic",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "01830CFE",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "/arduino/pir",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "dragino-2a7596",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 350,
+        "y": 200,
+        "wires": [
+            [
+                "30a8336aaf9fb74f"
+            ],
+            [
+                "a6f252d8361e3022"
+            ],
+            [
+                "cf0ec380ad26cbf2"
+            ],
+            [
+                "bac93ca0e8245763"
+            ]
+        ]
+    },
+    {
+        "id": "685dd3b42a00dfcd",
+        "type": "debug",
+        "z": "5f28e098f7af57ec",
+        "name": "HC-SR501 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1430,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "a6f252d8361e3022",
+        "type": "function",
+        "z": "5f28e098f7af57ec",
+        "name": "Buffer to String /arduino/pir",
+        "func": "msg.payload = msg.payload.toString();\nmsg.payloadData = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 200,
+        "wires": [
+            [
+                "6c3a64800ed584f8"
+            ]
+        ]
+    },
+    {
+        "id": "6c3a64800ed584f8",
+        "type": "json",
+        "z": "5f28e098f7af57ec",
+        "name": "payload to JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": true,
+        "x": 810,
+        "y": 200,
+        "wires": [
+            [
+                "51d2bdef9084328a"
+            ]
+        ]
+    },
+    {
+        "id": "69445e9f1887f768",
+        "type": "mongodb4",
+        "z": "5f28e098f7af57ec",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "HC-SR501",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray HC-SR501",
+        "x": 1460,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d84afa83214a6c07",
+        "type": "function",
+        "z": "5f28e098f7af57ec",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi MQTT Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 200,
+        "wires": [
+            [
+                "685dd3b42a00dfcd",
+                "69445e9f1887f768"
+            ]
+        ]
+    },
+    {
+        "id": "b75467b80a35517f",
+        "type": "influxdb out",
+        "z": "5f28e098f7af57ec",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB HC-SR501",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "HC-SR501",
+        "x": 1220,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "51d2bdef9084328a",
+        "type": "switch",
+        "z": "5f28e098f7af57ec",
+        "name": "Identify Sensor",
+        "property": "payload.sensor_id",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "HC-SR501",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1000,
+        "y": 200,
+        "wires": [
+            [
+                "d84afa83214a6c07",
+                "b75467b80a35517f"
+            ],
+            [
+                "aa21c36cd4408b6b"
+            ]
+        ]
+    },
+    {
+        "id": "aa21c36cd4408b6b",
+        "type": "debug",
+        "z": "5f28e098f7af57ec",
+        "name": "Other Sensor full msg",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "eafed4a94b63a3bf",
+        "type": "mqtt in",
+        "z": "5f28e098f7af57ec",
+        "name": "Mosquitto Docker (Buffer)",
+        "topic": "#",
+        "qos": "0",
+        "datatype": "buffer",
+        "broker": "5e8c3773417c5e96",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "1089f427736a0a90"
+            ]
+        ]
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "5e8c3773417c5e96",
+        "type": "mqtt-broker",
+        "name": "Mosquitto Docker",
+        "broker": "cisriseMosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

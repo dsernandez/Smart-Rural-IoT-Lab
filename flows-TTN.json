@@ -1,0 +1,304 @@
+[
+    {
+        "id": "fed3a4315d5ce011",
+        "type": "mqtt in",
+        "z": "28f57555d60cdbb5",
+        "name": "Dragino LHT65",
+        "topic": "v3/apertura-dragino@ttn/devices/dragino-lht65/up",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "3497ba89fc022b99",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 240,
+        "wires": [
+            [
+                "8a3e3bee0661eb34"
+            ]
+        ]
+    },
+    {
+        "id": "8a3e3bee0661eb34",
+        "type": "function",
+        "z": "28f57555d60cdbb5",
+        "name": "Extract Hum. y Temp.",
+        "func": "msg.payload = {\n    BatV: (msg.payload.uplink_message.decoded_payload.BatV),\n    Bat_status: (msg.payload.uplink_message.decoded_payload.Bat_status),\n    Exti_pin_level: (msg.payload.uplink_message.decoded_payload.Exti_pin_level),\n    Exti_status: (msg.payload.uplink_message.decoded_payload.Exti_status),\n    No_connect: (msg.payload.uplink_message.decoded_payload.No_connect),\n    Work_mode: (msg.payload.uplink_message.decoded_payload.Work_mode),\n    humedad: (msg.payload.uplink_message.decoded_payload.Hum_SHT),\n    temperatura: (msg.payload.uplink_message.decoded_payload.TempC_SHT)\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "7890295811f155d7",
+                "6bb5002dd857c3ff"
+            ]
+        ]
+    },
+    {
+        "id": "2b448be4042dd53b",
+        "type": "mqtt in",
+        "z": "28f57555d60cdbb5",
+        "name": "Dragino LGT-92",
+        "topic": "v3/apertura-dragino@ttn/devices/dragino-lgt-nuevo-gps/up",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "3497ba89fc022b99",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 460,
+        "wires": [
+            [
+                "c5eafe129dc5e97b"
+            ]
+        ]
+    },
+    {
+        "id": "c5eafe129dc5e97b",
+        "type": "function",
+        "z": "28f57555d60cdbb5",
+        "name": "Extract Lat.Long.Alt.",
+        "func": "msg.payload = {\n    alarm: (msg.payload.uplink_message.decoded_payload.ALARM_status),\n    BatV: (msg.payload.uplink_message.decoded_payload.BatV),\n    FW: (msg.payload.uplink_message.decoded_payload.FW),\n    LON: (msg.payload.uplink_message.decoded_payload.LON),\n    MD: (msg.payload.uplink_message.decoded_payload.MD),\n    latitud: (msg.payload.uplink_message.decoded_payload.latitude),\n    longitud: (msg.payload.uplink_message.decoded_payload.longitude),\n    altitud: (msg.payload.uplink_message.decoded_payload.altitude),\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 460,
+        "wires": [
+            [
+                "b8e6096907ae13e2",
+                "0d77613e2644bf2f"
+            ]
+        ]
+    },
+    {
+        "id": "b8e6096907ae13e2",
+        "type": "function",
+        "z": "28f57555d60cdbb5",
+        "name": "Normalize - MongoDB",
+        "func": "msg.payload.Time = new Date();\nmsg.payload.Id = 'LGT-92';\nmsg.payload.sensor_id = 'LGT-92';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 520,
+        "wires": [
+            [
+                "b87f909ff1021e97",
+                "f5fecc13cdc2fab6"
+            ]
+        ]
+    },
+    {
+        "id": "b87f909ff1021e97",
+        "type": "mongodb4",
+        "z": "28f57555d60cdbb5",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "LGT-92",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray",
+        "x": 810,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "41191917aba0f947",
+        "type": "mongodb4",
+        "z": "28f57555d60cdbb5",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "LHT65",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray",
+        "x": 810,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f2852f34460992ed",
+        "type": "debug",
+        "z": "28f57555d60cdbb5",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f5fecc13cdc2fab6",
+        "type": "debug",
+        "z": "28f57555d60cdbb5",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "0d77613e2644bf2f",
+        "type": "influxdb out",
+        "z": "28f57555d60cdbb5",
+        "influxdb": "411101e0ce14cdad",
+        "name": "",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "Dragino LGT-92",
+        "x": 840,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "7890295811f155d7",
+        "type": "function",
+        "z": "28f57555d60cdbb5",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\nmsg.payload.Id = 'LHT65';\nmsg.payload.sensor_id = 'LHT65';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 300,
+        "wires": [
+            [
+                "41191917aba0f947",
+                "f2852f34460992ed"
+            ]
+        ]
+    },
+    {
+        "id": "6bb5002dd857c3ff",
+        "type": "influxdb out",
+        "z": "28f57555d60cdbb5",
+        "influxdb": "411101e0ce14cdad",
+        "name": "",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "Dragino LHT65",
+        "x": 840,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "3497ba89fc022b99",
+        "type": "mqtt-broker",
+        "name": "TTN Server",
+        "broker": "eu1.cloud.thethings.network:1883",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    }
+]

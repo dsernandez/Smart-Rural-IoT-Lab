@@ -1,0 +1,311 @@
+[
+    {
+        "id": "8f8f5d652a3abc05",
+        "type": "http in",
+        "z": "4825b867a4bd86b9",
+        "name": "",
+        "url": "iot-lab/sensors",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 380,
+        "wires": [
+            [
+                "5fd13f41bd687f2a",
+                "e7385746a4131605",
+                "9b03f5e8b6fe00bb"
+            ]
+        ]
+    },
+    {
+        "id": "e7385746a4131605",
+        "type": "http response",
+        "z": "4825b867a4bd86b9",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 400,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "9876d46dc270f068",
+        "type": "debug",
+        "z": "4825b867a4bd86b9",
+        "name": "Other Sensors full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "5fd13f41bd687f2a",
+        "type": "switch",
+        "z": "4825b867a4bd86b9",
+        "name": "Identify Sensor",
+        "property": "payload.sensor_id",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "HC-SR04 Simulation",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "HC-SR04 Sim",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "HC-SR04",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "DHT11",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "KY-038",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "M5Stick Hat",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 7,
+        "x": 440,
+        "y": 380,
+        "wires": [
+            [
+                "ea7de86738c106d0",
+                "00684cd2d761681e",
+                "71a65ab9a2a62be5"
+            ],
+            [
+                "71a65ab9a2a62be5",
+                "ea7de86738c106d0",
+                "00684cd2d761681e"
+            ],
+            [],
+            [
+                "682145a8f04c93e9",
+                "9a99f5bcc44ed7d0"
+            ],
+            [
+                "c464e6ce9e6e4421",
+                "ba5b7121584263d0"
+            ],
+            [
+                "f711d092486dd69d"
+            ],
+            [
+                "9876d46dc270f068"
+            ]
+        ]
+    },
+    {
+        "id": "9a99f5bcc44ed7d0",
+        "type": "function",
+        "z": "4825b867a4bd86b9",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.sensor_id = msg.payload.sensor_id;\n//msg.parametro = Object.getOwnPropertyNames[msg.payload]\nmsg.parametros = Object.keys(msg.payload).filter(key => key !== \"sensor_id\");\n\n\nmsg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi MQTT Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 360,
+        "wires": [
+            [
+                "79e12711d49d0be6",
+                "e9687110e4692c7b"
+            ]
+        ]
+    },
+    {
+        "id": "79e12711d49d0be6",
+        "type": "mongodb4",
+        "z": "4825b867a4bd86b9",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "DHT11",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray DHT11",
+        "x": 970,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "682145a8f04c93e9",
+        "type": "influxdb out",
+        "z": "4825b867a4bd86b9",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB DHT11",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "DHT11",
+        "x": 700,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "e9687110e4692c7b",
+        "type": "debug",
+        "z": "4825b867a4bd86b9",
+        "name": "DHT11 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "ba5b7121584263d0",
+        "type": "influxdb out",
+        "z": "4825b867a4bd86b9",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB KY-038",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "KY-038",
+        "x": 700,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "c464e6ce9e6e4421",
+        "type": "function",
+        "z": "4825b867a4bd86b9",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi MQTT Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 440,
+        "wires": [
+            [
+                "0adf033849bcf6af",
+                "045af17e51e1b86e"
+            ]
+        ]
+    },
+    {
+        "id": "045af17e51e1b86e",
+        "type": "mongodb4",
+        "z": "4825b867a4bd86b9",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "KY-038",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray KY-038",
+        "x": 970,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0adf033849bcf6af",
+        "type": "debug",
+        "z": "4825b867a4bd86b9",
+        "name": "KY-038 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    }
+]

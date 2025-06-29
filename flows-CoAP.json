@@ -1,0 +1,237 @@
+[
+    {
+        "id": "7aad295b1c287383",
+        "type": "coap in",
+        "z": "8dad4fd968edc1eb",
+        "method": "PUT",
+        "name": "",
+        "server": "5f91aa8f9ec6f889",
+        "url": "/iot-lab/sensors",
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "588f4be8b6def134",
+                "eba03ee7905daa4b",
+                "d541216ba378b9a9"
+            ]
+        ]
+    },
+    {
+        "id": "588f4be8b6def134",
+        "type": "coap response",
+        "z": "8dad4fd968edc1eb",
+        "name": "",
+        "statusCode": "200",
+        "contentFormat": "text/plain",
+        "x": 230,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "963ab2f7c4a1f0ea",
+        "type": "json",
+        "z": "8dad4fd968edc1eb",
+        "name": "payload to JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": true,
+        "x": 650,
+        "y": 140,
+        "wires": [
+            [
+                "3a6dd1ac046a2e43"
+            ]
+        ]
+    },
+    {
+        "id": "3a6dd1ac046a2e43",
+        "type": "switch",
+        "z": "8dad4fd968edc1eb",
+        "name": "Identify Sensor",
+        "property": "payload.sensor_id",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "HC-SR04",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 840,
+        "y": 140,
+        "wires": [
+            [
+                "3964aca2eae2dcbd",
+                "6ced63027c0be6b6"
+            ],
+            [
+                "cdf11e5d4f29a087"
+            ]
+        ]
+    },
+    {
+        "id": "3964aca2eae2dcbd",
+        "type": "function",
+        "z": "8dad4fd968edc1eb",
+        "name": "Normalize  - MongoDB",
+        "func": "msg.payload.Time = new Date();\n//msg.payload.Id = 'WiFi UDP Sim';\nmsg.payload.Id = msg.payload.sensor_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 140,
+        "wires": [
+            [
+                "1b7aa768c3bb20c0",
+                "f409858e927c751c"
+            ]
+        ]
+    },
+    {
+        "id": "6ced63027c0be6b6",
+        "type": "influxdb out",
+        "z": "8dad4fd968edc1eb",
+        "influxdb": "411101e0ce14cdad",
+        "name": "InfluxDB HC-SR04",
+        "measurement": "values",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "cisrise",
+        "bucket": "HC-SR04",
+        "x": 1070,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "f409858e927c751c",
+        "type": "mongodb4",
+        "z": "8dad4fd968edc1eb",
+        "clientNode": "cc9951c039d5f175",
+        "mode": "collection",
+        "collection": "HC-SR04",
+        "operation": "insertOne",
+        "output": "toArray",
+        "maxTimeMS": "1000",
+        "handleDocId": false,
+        "name": " insertOnetoArray HC-SR04",
+        "x": 1320,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1b7aa768c3bb20c0",
+        "type": "debug",
+        "z": "8dad4fd968edc1eb",
+        "name": "HC-SR04 full msg",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1290,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "d541216ba378b9a9",
+        "type": "function",
+        "z": "8dad4fd968edc1eb",
+        "name": "Normalize (String)",
+        "func": "// Verifica si el payload es un objeto (JSON)\nif (typeof msg.payload === 'object' && msg.payload !== null) {\n    // Convertimos a string\n    msg.payload = JSON.stringify(msg.payload);\n} else if (typeof msg.payload !== 'string') {\n    // Si no es string ni objeto, lo convertimos igualmente\n    msg.payload = String(msg.payload);\n}\n\n// Devolvemos el payload como string\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 140,
+        "wires": [
+            [
+                "963ab2f7c4a1f0ea"
+            ]
+        ]
+    },
+    {
+        "id": "93c198697a6a887a",
+        "type": "coap in",
+        "z": "8dad4fd968edc1eb",
+        "method": "POST",
+        "name": "",
+        "server": "5f91aa8f9ec6f889",
+        "url": "/iot-lab/sensors",
+        "x": 160,
+        "y": 200,
+        "wires": [
+            [
+                "588f4be8b6def134",
+                "59e8784023dcb8fb",
+                "d541216ba378b9a9"
+            ]
+        ]
+    },
+    {
+        "id": "5f91aa8f9ec6f889",
+        "type": "coap-server",
+        "name": "CoAP Server",
+        "port": "5683",
+        "ipv6": false
+    },
+    {
+        "id": "411101e0ce14cdad",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "cisriseInfluxDB",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://cisriseInfluxDB:8086/",
+        "timeout": "15",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "cc9951c039d5f175",
+        "type": "mongodb4-client",
+        "name": "cisrise MongoDB",
+        "protocol": "mongodb",
+        "hostname": "",
+        "port": "",
+        "dbName": "IoTLab",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "30000",
+        "socketTimeoutMS": "0",
+        "minPoolSize": "0",
+        "maxPoolSize": "100",
+        "maxIdleTimeMS": "0",
+        "uri": "mongodb://10.201.54.164:27017",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
+    }
+]
